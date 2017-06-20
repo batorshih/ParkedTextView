@@ -117,7 +117,10 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
     }
 
     public void setTypedText(String typedText) {
-        mText = typedText;
+        if(typedText.endsWith(mParkedText))
+            mText = typedText;
+        else
+            mText = typedText + mParkedText;
         observeText();
 
         textChanged();
@@ -158,9 +161,14 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
     private Spanned getHtmlText() {
         String parkedTextColor = reformatColor(mParkedTextColor);
         if (mIsBoldParkedText) {
-            return fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedTextColor, getTypedText(), parkedTextColor, mParkedText));
+            return fromHtml(
+                    String.format(
+                            "<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>",
+                            parkedTextColor, getTypedText(), parkedTextColor, mParkedText));
         }
-        return fromHtml(String.format("<font color=\"#%s\">%s</font>", parkedTextColor, getTypedText() + mParkedText));
+        return fromHtml(
+                String.format("<font color=\"#%s\">%s</font>", parkedTextColor,
+                        getTypedText() + mParkedText));
     }
 
     private void textChanged() {
@@ -173,18 +181,14 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
                 goToBeginningOfParkedText();
 
                 mTypingState = TypingState.Typed;
-
             case Typed:
                 if (mText.equals(mParkedText)) {
                     mTypingState = TypingState.Start;
                     setText(getHtmlText(), BufferType.SPANNABLE);
                     return;
                 }
-
                 setText(getHtmlText(), BufferType.SPANNABLE);
-
                 goToBeginningOfParkedText();
-
             default:
                 break;
         }
