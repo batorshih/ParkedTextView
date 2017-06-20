@@ -109,14 +109,14 @@ public class ParkedTextView extends EditText {
         setSelection(getBeginningPositionOfParkedText());
     }
 
-    private String getTypedText() {
+    public String getTypedText() {
         if (mText.endsWith(mParkedText)) {
             return mText.substring(0, getBeginningPositionOfParkedText());
         }
         return mText;
     }
 
-    private void setTypedText(String typedText) {
+    public void setTypedText(String typedText) {
         mText = typedText;
         observeText();
 
@@ -259,5 +259,4 @@ public class ParkedTextView extends EditText {
             mParkedTextView.addTextChangedListener(this);
         }
     }
-
 }
