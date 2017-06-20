@@ -2,18 +2,18 @@ package com.goka.parkedtextview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.widget.EditText;
 
 /**
  * Created by katsuyagoto on 15/07/22.
  */
-public class ParkedTextView extends EditText {
+public class ParkedTextView extends android.support.v7.widget.AppCompatEditText {
 
     private static final String TAG = ParkedTextView.class.getSimpleName();
     private static final String DEFAULT_TEXT_COLOR = "FFFFFF";
@@ -132,9 +132,9 @@ public class ParkedTextView extends EditText {
         String parkedTextColor = reformatColor(mParkedTextColor);
         String parkedHintColor = reformatColor(mParkedHintColor);
         if (mIsBoldParkedText) {
-            hint = Html.fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedHintColor, placeholderText, parkedTextColor, mParkedText));
+            hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedHintColor, placeholderText, parkedTextColor, mParkedText));
         } else {
-            hint = Html.fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>", parkedHintColor, placeholderText, parkedTextColor, mParkedText));
+            hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>", parkedHintColor, placeholderText, parkedTextColor, mParkedText));
         }
         super.setHint(hint);
     }
@@ -158,9 +158,9 @@ public class ParkedTextView extends EditText {
     private Spanned getHtmlText() {
         String parkedTextColor = reformatColor(mParkedTextColor);
         if (mIsBoldParkedText) {
-            return Html.fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedTextColor, getTypedText(), parkedTextColor, mParkedText));
+            return fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedTextColor, getTypedText(), parkedTextColor, mParkedText));
         }
-        return Html.fromHtml(String.format("<font color=\"#%s\">%s</font>", parkedTextColor, getTypedText() + mParkedText));
+        return fromHtml(String.format("<font color=\"#%s\">%s</font>", parkedTextColor, getTypedText() + mParkedText));
     }
 
     private void textChanged() {
@@ -224,11 +224,11 @@ public class ParkedTextView extends EditText {
         }
 
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if (before > 0) {
+            if(before > 0) {
                 mIsDeleteText = true;
             } else {
                 mIsDeleteText = false;
@@ -258,5 +258,12 @@ public class ParkedTextView extends EditText {
 
             mParkedTextView.addTextChangedListener(this);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Spanned fromHtml(String str){
+        if(Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
+            return Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY);
+        return Html.fromHtml(str);
     }
 }
