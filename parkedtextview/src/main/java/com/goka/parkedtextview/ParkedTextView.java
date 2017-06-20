@@ -249,7 +249,11 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
                 if (text.length() < mParkedTextView.getParkedText().length()) {
                     mParkedTextView.setEmptyText();
                 } else {
-                    String parkedText = text.substring(mParkedTextView.getBeginningPositionOfParkedText() - 1);
+                    String parkedText;
+                    if(mParkedTextView.getBeginningPositionOfParkedText() > 0)
+                        parkedText = text.substring(mParkedTextView.getBeginningPositionOfParkedText() - 1);
+                    else
+                        parkedText = text;
                     if (!parkedText.equals(mParkedTextView.getParkedText())) {
                         mParkedTextView.setEmptyText();
                     } else {
