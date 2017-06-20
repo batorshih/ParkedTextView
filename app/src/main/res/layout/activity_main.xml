@@ -22,4 +22,18 @@
         app:parkedTextColor="FFFFFF"
         app:parkedHintColor="CCCCCC"
         app:parkedTextBold="true" />
+    <Button
+        android:id="@+id/btn_set_text"
+        android:text="set text"
+        android:layout_above="@+id/btn_get_text"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/btn_get_text"
+        android:text="get text"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </RelativeLayout>

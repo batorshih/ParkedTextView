@@ -1,13 +1,17 @@
 package com.goka.sample;
 
-import com.goka.parkedtextview.ParkedTextView;
-
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.goka.parkedtextview.ParkedTextView;
 
 public class MainActivity extends AppCompatActivity {
+    ParkedTextView mParkedTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +23,22 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        mParkedTextView = (ParkedTextView) findViewById(R.id.parked_text_view);
+        Button setButton = (Button) findViewById(R.id.btn_set_text);
+        Button getButton = (Button) findViewById(R.id.btn_get_text);
+        setButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mParkedTextView.setTypedText("test");
+            }
+        });
+        getButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, mParkedTextView.getTypedText(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
         return true;
     }
 

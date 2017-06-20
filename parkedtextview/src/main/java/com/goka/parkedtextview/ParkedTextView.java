@@ -181,6 +181,7 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
                 goToBeginningOfParkedText();
 
                 mTypingState = TypingState.Typed;
+                break;
             case Typed:
                 if (mText.equals(mParkedText)) {
                     mTypingState = TypingState.Start;
@@ -242,16 +243,14 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         @Override
         public void afterTextChanged(Editable s) {
             mParkedTextView.removeTextChangedListener(this);
-
             String text = s.toString();
             if (mIsDeleteText) {
-
                 if (text.length() < mParkedTextView.getParkedText().length()) {
                     mParkedTextView.setEmptyText();
                 } else {
                     String parkedText;
                     if(mParkedTextView.getBeginningPositionOfParkedText() > 0)
-                        parkedText = text.substring(mParkedTextView.getBeginningPositionOfParkedText() - 1);
+                        parkedText = text.substring(mParkedTextView.getBeginningPositionOfParkedText());
                     else
                         parkedText = text;
                     if (!parkedText.equals(mParkedTextView.getParkedText())) {
@@ -263,7 +262,6 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
             } else {
                 mParkedTextView.setTypedText(text);
             }
-
             mParkedTextView.addTextChangedListener(this);
         }
     }
