@@ -20,16 +20,14 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
 
     // Able to set
     private String mParkedText = "";
+    private String mHintText = "";
     private boolean mIsBoldParkedText = true;
+    private boolean mIsParkedInFront = false;
     private String mParkedTextColor = DEFAULT_TEXT_COLOR;
     private String mParkedHintColor = DEFAULT_TEXT_COLOR;
 
     // Unable to set
     private String mText = null;
-    private enum TypingState {
-        Start, Typed
-    }
-    private TypingState mTypingState = TypingState.Start;
 
     public ParkedTextView(Context context) {
         super(context);
@@ -45,12 +43,12 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ParkedTextView, defStyleAttr, 0);
 
+        mIsParkedInFront = a.getBoolean(R.styleable.ParkedTextView_parkedInFront, false);
+
         mParkedText = a.getString(R.styleable.ParkedTextView_parkedText);
         if (mParkedText == null) {
             mParkedText = "";
         }
-
-        String hint = a.getString(R.styleable.ParkedTextView_parkedHint);
 
         mParkedTextColor = a.getString(R.styleable.ParkedTextView_parkedTextColor);
         if (mParkedTextColor == null) {
@@ -64,21 +62,31 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
 
         mIsBoldParkedText = a.getBoolean(R.styleable.ParkedTextView_parkedTextBold, true);
 
+        setHintText(a.getString(R.styleable.ParkedTextView_parkedHint));
+
         init();
 
-        if (hint != null) {
-            setPlaceholderText(hint);
-        }
-
         a.recycle();
+
+        setEnabled(true);
+        setFocusable(true);
+        setFocusableInTouchMode(true);
     }
 
     private void init() {
         mText = "";
-        observeText();
-
-        mTypingState = TypingState.Start;
         addTextChangedListener(new ParkedTextViewWatcher(this));
+    }
+
+    public void setHintText(String hint){
+        mHintText = hint;
+        if(mHintText == null)
+            mHintText = "";
+        setPlaceholderText();
+    }
+
+    public String getHintText(){
+        return mHintText;
     }
 
     public String getParkedText() {
@@ -86,19 +94,37 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
     }
 
     public void setParkedText(String parkedText) {
-        if (!TextUtils.isEmpty(mText)) {
-            String typed = mText.substring(0, getBeginningPositionOfParkedText());
-            mText = typed + parkedText;
+        String typed;
+        if(!TextUtils.isEmpty(mText)){
+            if(mIsParkedInFront) {
+                typed = mText.substring(getParkedText().length());
+                mText = getParkedText() + typed;
+            }else{
+                typed = mText.substring(0, getBeginningPositionOfParkedText());
+                mText = typed + getParkedText();
+            }
             mParkedText = parkedText;
-
-            textChanged();
-        } else {
+        }else{
             mParkedText = parkedText;
         }
     }
 
+    public String getTypedText() {
+        if(!mIsParkedInFront && mText.endsWith(mParkedText)){
+            return mText.substring(0, getBeginningPositionOfParkedText());
+        }else if(mIsParkedInFront && mText.startsWith(mText) && !mText.isEmpty())
+            return mText.substring(getParkedText().length());
+        else
+            return mText;
+    }
+
+    public void setTypedText(String typedText) {
+        textChanged(typedText);
+    }
+
+
     private int getBeginningPositionOfParkedText() {
-        int position = mText.length() - mParkedText.length();
+        int position = mText.length() - getParkedText().length();
         if (position < 0) {
             return 0;
         }
@@ -109,42 +135,31 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         setSelection(getBeginningPositionOfParkedText());
     }
 
-    public String getTypedText() {
-        if (mText.endsWith(mParkedText)) {
-            return mText.substring(0, getBeginningPositionOfParkedText());
-        }
-        return mText;
-    }
-
-    public void setTypedText(String typedText) {
-        if(typedText.endsWith(mParkedText))
-            mText = typedText;
-        else
-            mText = typedText + mParkedText;
-        observeText();
-
-        textChanged();
+    private void goToEndOfParkedText() {
+        setSelection(mText.length());
     }
 
     private void setEmptyText() {
         setTypedText("");
     }
 
-    public void setPlaceholderText(String placeholderText) {
-        Spanned hint = null;
+    public void setPlaceholderText() {
+        Spanned hint;
         String parkedTextColor = reformatColor(mParkedTextColor);
         String parkedHintColor = reformatColor(mParkedHintColor);
-        if (mIsBoldParkedText) {
-            hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedHintColor, placeholderText, parkedTextColor, mParkedText));
-        } else {
-            hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>", parkedHintColor, placeholderText, parkedTextColor, mParkedText));
-        }
+        if(mIsParkedInFront)
+            if (mIsBoldParkedText) {
+                hint = fromHtml(String.format("<font color=\"#%s\"><b>%s</b></font><font color=\"#%s\">%s</font>", parkedTextColor, getParkedText(), parkedHintColor, getHintText()));
+            } else {
+                hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>",parkedTextColor , getParkedText(), parkedHintColor, getHintText()));
+            }
+        else
+            if (mIsBoldParkedText) {
+                hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedHintColor, getHintText(), parkedTextColor, getParkedText()));
+            } else {
+                hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>", parkedHintColor, getHintText(), parkedTextColor, getParkedText()));
+            }
         super.setHint(hint);
-    }
-
-    // Call when TypedText is changed
-    private String observeText() {
-        return mText = getTypedText() + mParkedText;
     }
 
     private String reformatColor(String color) {
@@ -160,39 +175,50 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
 
     private Spanned getHtmlText() {
         String parkedTextColor = reformatColor(mParkedTextColor);
-        if (mIsBoldParkedText) {
+        if(mIsParkedInFront){
+            if (mIsBoldParkedText) {
+                return fromHtml(
+                        String.format(
+                                "<font color=\"#%s\"><b>%s</b></font><font color=\"#%s\">%s</font>",
+                                parkedTextColor, getParkedText(), parkedTextColor, getTypedText()));
+            }
             return fromHtml(
-                    String.format(
-                            "<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>",
-                            parkedTextColor, getTypedText(), parkedTextColor, mParkedText));
+                    String.format("<font color=\"#%s\">%s</font>", parkedTextColor,
+                            getParkedText() + getTypedText()));
+        }else{
+            if (mIsBoldParkedText) {
+                return fromHtml(
+                        String.format(
+                                "<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>",
+                                parkedTextColor, getTypedText(), parkedTextColor, getParkedText()));
+            }
+            return fromHtml(
+                    String.format("<font color=\"#%s\">%s</font>", parkedTextColor,
+                            getTypedText() + getParkedText()));
         }
-        return fromHtml(
-                String.format("<font color=\"#%s\">%s</font>", parkedTextColor,
-                        getTypedText() + mParkedText));
     }
 
-    private void textChanged() {
-        switch (mTypingState) {
-            case Start:
-                if (mText.length() <= 0) {
-                    return;
-                }
-                setText(getHtmlText(), BufferType.SPANNABLE);
-                goToBeginningOfParkedText();
-
-                mTypingState = TypingState.Typed;
-                break;
-            case Typed:
-                if (mText.equals(mParkedText)) {
-                    mTypingState = TypingState.Start;
-                    setText(getHtmlText(), BufferType.SPANNABLE);
-                    return;
-                }
-                setText(getHtmlText(), BufferType.SPANNABLE);
-                goToBeginningOfParkedText();
-            default:
-                break;
+    private void textChanged(String typed) {
+        if(typed.length() <= getParkedText().length() && !mText.isEmpty()){
+            mText = getParkedText();
+        }else{
+            if(mIsParkedInFront) {
+                if(typed.startsWith(getParkedText()))
+                    mText = typed;
+                else
+                    mText = getParkedText() + typed;
+            }else{
+                if(typed.endsWith(getParkedText()))
+                    mText = typed;
+                else
+                    mText = typed + getParkedText();
+            }
         }
+        setText(getHtmlText(), BufferType.SPANNABLE);
+        if(mIsParkedInFront)
+            goToEndOfParkedText();
+        else
+            goToBeginningOfParkedText();
     }
 
     public boolean isBoldParkedText() {
@@ -219,12 +245,11 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         mParkedHintColor = parkedHintColor;
     }
 
-    private static class ParkedTextViewWatcher implements TextWatcher {
+    private class ParkedTextViewWatcher implements TextWatcher {
 
         private ParkedTextView mParkedTextView;
-        private boolean mIsDeleteText;
 
-        public ParkedTextViewWatcher(ParkedTextView parkedTextView) {
+        ParkedTextViewWatcher(ParkedTextView parkedTextView) {
             this.mParkedTextView = parkedTextView;
         }
 
@@ -232,36 +257,24 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
         @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            if(before > 0) {
-                mIsDeleteText = true;
-            } else {
-                mIsDeleteText = false;
-            }
-        }
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
         @Override
         public void afterTextChanged(Editable s) {
             mParkedTextView.removeTextChangedListener(this);
-            String text = s.toString();
-            if (mIsDeleteText) {
-                if (text.length() < mParkedTextView.getParkedText().length()) {
-                    mParkedTextView.setEmptyText();
-                } else {
-                    String parkedText;
-                    if(mParkedTextView.getBeginningPositionOfParkedText() > 0)
-                        parkedText = text.substring(mParkedTextView.getBeginningPositionOfParkedText());
-                    else
-                        parkedText = text;
-                    if (!parkedText.equals(mParkedTextView.getParkedText())) {
-                        mParkedTextView.setEmptyText();
-                    } else {
-                        mParkedTextView.setTypedText(text);
-                    }
-                }
-            } else {
-                mParkedTextView.setTypedText(text);
+            String text = s.toString().replace(" ", "");
+            boolean isParkedModified = false;
+            if(!mText.isEmpty() && mIsParkedInFront && !text.startsWith(getParkedText())){
+                setText(getHtmlText(), BufferType.SPANNABLE);
+                goToEndOfParkedText();
+                isParkedModified = true;
+            }else if(!mText.isEmpty() && !mIsParkedInFront && !text.endsWith(getParkedText())){
+                setText(getHtmlText(), BufferType.SPANNABLE);
+                goToBeginningOfParkedText();
+                isParkedModified = true;
             }
+            if(!isParkedModified)
+                mParkedTextView.setTypedText(text);
             mParkedTextView.addTextChangedListener(this);
         }
     }
