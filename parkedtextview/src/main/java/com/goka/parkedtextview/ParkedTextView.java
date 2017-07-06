@@ -62,7 +62,9 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
 
         mIsBoldParkedText = a.getBoolean(R.styleable.ParkedTextView_parkedTextBold, true);
 
-        setHintText(a.getString(R.styleable.ParkedTextView_parkedHint));
+        String hint = a.getString(R.styleable.ParkedTextView_parkedHint);
+        if(hint != null && !hint.isEmpty())
+            setHintText(hint);
 
         init();
 
