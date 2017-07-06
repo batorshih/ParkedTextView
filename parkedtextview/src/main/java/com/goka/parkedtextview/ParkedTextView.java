@@ -62,9 +62,7 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
 
         mIsBoldParkedText = a.getBoolean(R.styleable.ParkedTextView_parkedTextBold, true);
 
-        String hint = a.getString(R.styleable.ParkedTextView_parkedHint);
-        if(hint != null && !hint.isEmpty())
-            setHintText(hint);
+        setHintText(a.getString(R.styleable.ParkedTextView_parkedHint));
 
         init();
 
@@ -149,19 +147,20 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         Spanned hint;
         String parkedTextColor = reformatColor(mParkedTextColor);
         String parkedHintColor = reformatColor(mParkedHintColor);
-        if(mIsParkedInFront)
-            if (mIsBoldParkedText) {
-                hint = fromHtml(String.format("<font color=\"#%s\"><b>%s</b></font><font color=\"#%s\">%s</font>", parkedTextColor, getParkedText(), parkedHintColor, getHintText()));
-            } else {
-                hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>",parkedTextColor , getParkedText(), parkedHintColor, getHintText()));
-            }
-        else
-            if (mIsBoldParkedText) {
+        if(!getHintText().isEmpty()) {
+            if (mIsParkedInFront)
+                if (mIsBoldParkedText) {
+                    hint = fromHtml(String.format("<font color=\"#%s\"><b>%s</b></font><font color=\"#%s\">%s</font>", parkedTextColor, getParkedText(), parkedHintColor, getHintText()));
+                } else {
+                    hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>", parkedTextColor, getParkedText(), parkedHintColor, getHintText()));
+                }
+            else if (mIsBoldParkedText) {
                 hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\"><b>%s</b></font>", parkedHintColor, getHintText(), parkedTextColor, getParkedText()));
             } else {
                 hint = fromHtml(String.format("<font color=\"#%s\">%s</font><font color=\"#%s\">%s</font>", parkedHintColor, getHintText(), parkedTextColor, getParkedText()));
             }
-        super.setHint(hint);
+            super.setHint(hint);
+        }
     }
 
     private String reformatColor(String color) {
