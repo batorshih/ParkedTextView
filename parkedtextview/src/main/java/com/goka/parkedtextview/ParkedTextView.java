@@ -135,8 +135,8 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         setSelection(mText.length());
     }
 
-    private void setEmptyText() {
-        setTypedText("");
+    public void setEmptyText() {
+        setText("");
     }
 
     public void setPlaceholderText() {
@@ -260,6 +260,11 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         public void afterTextChanged(Editable s) {
             mParkedTextView.removeTextChangedListener(this);
             String text = s.toString().replace(" ", "");
+            if(text.equals("")) {
+                mParkedTextView.addTextChangedListener(this);
+                mText = "";
+                return;
+            }
             boolean isParkedModified = false;
             if(!mText.isEmpty() && mIsParkedInFront && !text.startsWith(getParkedText())){
                 setText(getHtmlText(), BufferType.SPANNABLE);
