@@ -67,10 +67,6 @@ public class ParkedTextView extends android.support.v7.widget.AppCompatEditText 
         init();
 
         a.recycle();
-
-        setEnabled(true);
-        setFocusable(true);
-        setFocusableInTouchMode(true);
     }
 
     private void init() {
